@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderNet.WebApi", "SpiderNet.WebApi\SpiderNet.WebApi.csproj", "{CA670A5D-1E8D-4000-9FE4-7E28BAC3A35F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderNet.Domain", "SpiderNet.Domain\SpiderNet.Domain.csproj", "{CB06C441-76C9-4679-8BD8-764A8EC03DB8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderNet.Infrastructure", "SpiderNet.Infrastructure\SpiderNet.Infrastructure.csproj", "{B15F0BCA-7744-488B-8DB9-1DF7E66B7943}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderNet.Application", "SpiderNet.Application\SpiderNet.Application.csproj", "{A68C26FD-9C33-42DF-B545-920C75FB34CD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CA670A5D-1E8D-4000-9FE4-7E28BAC3A35F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA670A5D-1E8D-4000-9FE4-7E28BAC3A35F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA670A5D-1E8D-4000-9FE4-7E28BAC3A35F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA670A5D-1E8D-4000-9FE4-7E28BAC3A35F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB06C441-76C9-4679-8BD8-764A8EC03DB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB06C441-76C9-4679-8BD8-764A8EC03DB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB06C441-76C9-4679-8BD8-764A8EC03DB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB06C441-76C9-4679-8BD8-764A8EC03DB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B15F0BCA-7744-488B-8DB9-1DF7E66B7943}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B15F0BCA-7744-488B-8DB9-1DF7E66B7943}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B15F0BCA-7744-488B-8DB9-1DF7E66B7943}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B15F0BCA-7744-488B-8DB9-1DF7E66B7943}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A68C26FD-9C33-42DF-B545-920C75FB34CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A68C26FD-9C33-42DF-B545-920C75FB34CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A68C26FD-9C33-42DF-B545-920C75FB34CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A68C26FD-9C33-42DF-B545-920C75FB34CD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
