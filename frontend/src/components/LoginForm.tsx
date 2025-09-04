@@ -76,13 +76,13 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
                             </label>
                             <input
                                 id="email"
-                                type="email"
+                                type="text"
                                 {...register('email', {
                                     required: 'Email là bắt buộc',
-                                    pattern: {
-                                        value: /^\S+@\S+$/i,
-                                        message: 'Email không hợp lệ',
-                                    },
+                                    // pattern: {
+                                    //     value: /^\S+@\S+$/i,
+                                    //     message: 'Email không hợp lệ',
+                                    // },
                                 })}
                                 className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white placeholder-white/50
                          rounded-lg focus:outline-none focus:ring-2 focus:ring-spiderman-red focus:border-transparent
