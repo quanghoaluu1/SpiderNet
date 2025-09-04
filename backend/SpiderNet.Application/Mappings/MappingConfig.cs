@@ -2,7 +2,11 @@
 using Mapster;
 using SpiderNet.Application.DTOs;
 using SpiderNet.Application.DTOs.Auth;
+using SpiderNet.Application.DTOs.Comment;
+using SpiderNet.Application.DTOs.Post;
+using SpiderNet.Application.DTOs.Reaction;
 using SpiderNet.Application.DTOs.User;
+using SpiderNet.Application.Extensions;
 using SpiderNet.Domain.Entities;
 
 namespace SpiderNet.Application.Mappings;
@@ -11,7 +15,15 @@ public class MappingConfig
 {
     public static void Configure()
     {
-        TypeAdapterConfig<User, UserDto>
+       ConfigureUserMappings();
+       ConfigurePostMappings();
+       ConfigureCommentMappings();
+       ConfigureReactionMappings();
+    }
+
+    private static void ConfigureUserMappings()
+    {
+         TypeAdapterConfig<User, UserDto>
             .NewConfig()
             .Map(dest => dest.FullName, src => $"{src.FirstName} {src.LastName}".Trim());
 
@@ -56,5 +68,126 @@ public class MappingConfig
             .NewConfig()
             .Map(dest => dest.UpdatedAt, src => DateTime.UtcNow)
             .IgnoreNonMapped(true);
+    }
+    
+     private static void ConfigurePostMappings()
+    {
+        // Post -> PostDto
+        TypeAdapterConfig<Post, PostDto>
+            .NewConfig()
+            .Map(dest => dest.UserFullName, src => $"{src.User.FirstName} {src.User.LastName}".Trim())
+            .Map(dest => dest.UserDisplayName, src => 
+                string.IsNullOrWhiteSpace(src.User.FirstName) ? src.User.Username : src.User.FirstName)
+            .Map(dest => dest.Username, src => src.User.Username)
+            .Map(dest => dest.UserAvatarUrl, src => src.User.AvatarUrl)
+            .Map(dest => dest.TimeAgo, src => GetTimeAgo(src.CreatedAt))
+            .Ignore(dest => dest.ReactionsSummary)
+            .Ignore(dest => dest.CurrentUserReaction)
+            .Ignore(dest => dest.IsOwnPost);
+
+        // Post -> PostDetailDto
+        TypeAdapterConfig<Post, PostDetailDto>
+            .NewConfig()
+            .Inherits<Post, PostDto>()
+            .Ignore(dest => dest.Comments)
+            .Ignore(dest => dest.RecentReactions);
+
+        // CreatePostRequest -> Post (base mapping, need manual fields)
+        TypeAdapterConfig<CreatePostRequest, Post>
+            .NewConfig()
+            .Map(dest => dest.Content, src => src.Content.Trim())
+            .Map(dest => dest.Privacy, src => src.Privacy)
+            .Map(dest => dest.Id, src => Guid.NewGuid())
+            .Map(dest => dest.CreatedAt, src => DateTime.UtcNow)
+            .Map(dest => dest.UpdatedAt, src => DateTime.UtcNow)
+            .Ignore(dest => dest.UserId)
+            .Ignore(dest => dest.ImageUrl)
+            .Ignore(dest => dest.VideoUrl)
+            .Ignore(dest => dest.ImagePublicId)
+            .Ignore(dest => dest.VideoPublicId);
+
+        // UpdatePostRequest -> Post
+        TypeAdapterConfig<UpdatePostRequest, Post>
+            .NewConfig()
+            .Map(dest => dest.Content, src => src.Content.Trim())
+            .Map(dest => dest.Privacy, src => src.Privacy)
+            .Map(dest => dest.UpdatedAt, src => DateTime.UtcNow)
+            .IgnoreNonMapped(true);
+    }
+
+    private static void ConfigureCommentMappings()
+    {
+        // Comment -> CommentDto
+        TypeAdapterConfig<Comment, CommentDto>
+            .NewConfig()
+            .Map(dest => dest.UserFullName, src => $"{src.User.FirstName} {src.User.LastName}".Trim())
+            .Map(dest => dest.UserDisplayName, src => 
+                string.IsNullOrWhiteSpace(src.User.FirstName) ? src.User.Username : src.User.FirstName)
+            .Map(dest => dest.Username, src => src.User.Username)
+            .Map(dest => dest.UserAvatarUrl, src => src.User.AvatarUrl)
+            .Map(dest => dest.TimeAgo, src => GetTimeAgo(src.CreatedAt))
+            .Map(dest => dest.IsReply, src => src.ParentCommentId.HasValue)
+            .Map(dest => dest.IsEdited, src => src.UpdatedAt > src.CreatedAt.AddMinutes(1))
+            .Map(dest => dest.RepliesCount, src => src.Replies.Count(r => !r.IsDeleted))
+            .Ignore(dest => dest.ReactionsSummary)
+            .Ignore(dest => dest.CurrentUserReaction)
+            .Ignore(dest => dest.IsOwnComment)
+            .Ignore(dest => dest.Replies)
+            .Ignore(dest => dest.HasMoreReplies);
+
+        // CreateCommentRequest -> Comment
+        TypeAdapterConfig<CreateCommentRequest, Comment>
+            .NewConfig()
+            .Map(dest => dest.Content, src => src.Content.Trim())
+            .Map(dest => dest.ParentCommentId, src => src.ParentCommentId)
+            .Map(dest => dest.Id, src => Guid.NewGuid())
+            .Map(dest => dest.CreatedAt, src => DateTime.UtcNow)
+            .Map(dest => dest.UpdatedAt, src => DateTime.UtcNow)
+            .Ignore(dest => dest.PostId)
+            .Ignore(dest => dest.UserId);
+
+        // UpdateCommentRequest -> Comment
+        TypeAdapterConfig<UpdateCommentRequest, Comment>
+            .NewConfig()
+            .Map(dest => dest.Content, src => src.Content.Trim())
+            .Map(dest => dest.UpdatedAt, src => DateTime.UtcNow)
+            .IgnoreNonMapped(true);
+    }
+
+    private static void ConfigureReactionMappings()
+    {
+        // Reaction -> ReactionDto
+        TypeAdapterConfig<Reaction, ReactionDto>
+            .NewConfig()
+            .Map(dest => dest.UserFullName, src => $"{src.User.FirstName} {src.User.LastName}".Trim())
+            .Map(dest => dest.Username, src => src.User.Username)
+            .Map(dest => dest.UserAvatarUrl, src => src.User.AvatarUrl)
+            .Map(dest => dest.TypeEmoji, src => src.Type.GetEmoji())
+            .Map(dest => dest.TypeName, src => src.Type.GetDisplayName());
+
+        // CommentReaction -> CommentReactionDto
+        TypeAdapterConfig<CommentReaction, CommentReactionDto>
+            .NewConfig()
+            .Map(dest => dest.UserFullName, src => $"{src.User.FirstName} {src.User.LastName}".Trim())
+            .Map(dest => dest.Username, src => src.User.Username)
+            .Map(dest => dest.UserAvatarUrl, src => src.User.AvatarUrl)
+            .Map(dest => dest.TypeEmoji, src => src.Type.GetEmoji())
+            .Map(dest => dest.TypeName, src => src.Type.GetDisplayName());
+    }
+
+    private static string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.UtcNow - dateTime;
+
+        if (timeSpan.TotalMinutes < 1)
+            return "Just now";
+        else if (timeSpan.TotalHours < 1)
+            return $"{(int)timeSpan.TotalMinutes}m";
+        else if (timeSpan.TotalDays < 1)
+            return $"{(int)timeSpan.TotalHours}h";
+        else if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays}d";
+        else
+            return dateTime.ToString("MMM dd");
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using SpiderNet.Application.Interfaces;
+using SpiderNet.Application.Interfaces.Services;
 using SpiderNet.Application.Services;
 using SpiderNet.Domain.Entities;
 using SpiderNet.Infrastructure.Repositories;
@@ -18,6 +19,7 @@ public static class ServiceCollectionExtension
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddScoped<IPasswordValidationService, PasswordValidationService>();
         services.AddScoped<IUserProfileService, UserProfileService>();
+        services.AddScoped<IPostService, PostService>();
         return services;
     }
 }
