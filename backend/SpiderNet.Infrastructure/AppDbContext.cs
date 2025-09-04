@@ -9,6 +9,9 @@ public class AppDbContext: DbContext
     
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
+    public DbSet<Post> Posts => Set<Post>();
+    public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<Reaction> Reactions => Set<Reaction>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -63,6 +66,93 @@ public class AppDbContext: DbContext
             entity.HasOne(rt => rt.User)
                   .WithMany(u => u.RefreshTokens)
                   .HasForeignKey(rt => rt.UserId);
+        });
+        
+        modelBuilder.Entity<Post>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Content).HasMaxLength(2000);
+            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+            entity.Property(e => e.VideoUrl).HasMaxLength(500);
+            entity.Property(e => e.ImagePublicId).HasMaxLength(200);
+            entity.Property(e => e.VideoPublicId).HasMaxLength(200);
+            
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasIndex(e => e.CreatedAt);
+            entity.HasIndex(e => new { e.UserId, e.CreatedAt });
+        });
+        
+        modelBuilder.Entity<Reaction>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Type).HasConversion<int>();
+            
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.Post)
+                .WithMany(p => p.Reactions)
+                .HasForeignKey(e => e.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            // One user can only have one reaction per post
+            entity.HasIndex(e => new { e.UserId, e.PostId }).IsUnique();
+            entity.HasIndex(e => e.PostId);
+            entity.HasIndex(e => e.Type);
+        });
+        
+        modelBuilder.Entity<Comment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Content).IsRequired().HasMaxLength(2000);
+        
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        
+            entity.HasOne(e => e.Post)
+                .WithMany(p => p.Comments)
+                .HasForeignKey(e => e.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+        
+            // Self-referencing for nested comments
+            entity.HasOne(e => e.ParentComment)
+                .WithMany(c => c.Replies)
+                .HasForeignKey(e => e.ParentCommentId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete for replies
+        
+            entity.HasIndex(e => e.PostId);
+            entity.HasIndex(e => e.ParentCommentId);
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // CommentReaction configuration
+        modelBuilder.Entity<CommentReaction>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Type).HasConversion<int>();
+        
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        
+            entity.HasOne(e => e.Comment)
+                .WithMany(c => c.Reactions)
+                .HasForeignKey(e => e.CommentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        
+            // One user can only have one reaction per comment
+            entity.HasIndex(e => new { e.UserId, e.CommentId }).IsUnique();
+            entity.HasIndex(e => e.CommentId);
+            entity.HasIndex(e => e.Type);
         });
     }
 }
