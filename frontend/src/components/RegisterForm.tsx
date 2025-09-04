@@ -55,7 +55,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
         localStorage.setItem("token", response.token);
         localStorage.setItem("user", JSON.stringify(response.user));
       }
-      router.push("/dashboard");
+      router.push("/");
     } catch (err: unknown) {
       setError(
         (err as { response?: { data?: { message?: string } } }).response?.data

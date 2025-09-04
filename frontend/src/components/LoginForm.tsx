@@ -32,7 +32,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
                 localStorage.setItem('token', response.token);
                 localStorage.setItem('user', JSON.stringify(response.user));
             }
-            router.push('/dashboard');
+            router.push('/');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Đăng nhập thất bại');
         } finally {

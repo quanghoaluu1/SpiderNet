@@ -1,35 +1,112 @@
 'use client';
 
-import { useState } from 'react';
-import LoginForm from '@/components/LoginForm';
-import RegisterForm from '@/components/RegisterForm';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Header from '@/components/Header';
+import LeftSidebar from '@/components/LeftSidebar';
+import RightSidebar from '@/components/RightSidebar';
+import CreatePost from '@/components/CreatePost';
+import PostFeed from '@/components/PostFeed';
+import Background from '@/components/Background';
+import { User, Post } from '@/types';
 
-export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
+export default function HomePage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [posts] = useState<Post[]>([
+    {
+      id: 1,
+      user: {
+        name: "Spider-Man",
+        avatar: "/icons/icon.png"
+      },
+      content: "Just swinging through the neighborhood! 🕷️ Always remember, with great power comes great responsibility.",
+      image: "/icons/icon.png",
+      likes: 1247,
+      comments: 89,
+      shares: 34,
+      timestamp: "2 hours ago"
+    },
+    {
+      id: 2,
+      user: {
+        name: "Peter Parker",
+        avatar: "/icons/icon.png"
+      },
+      content: "Working on some new web-shooters in the lab today. Science is amazing! 🔬",
+      likes: 892,
+      comments: 56,
+      shares: 23,
+      timestamp: "4 hours ago"
+    },
+    {
+      id: 3,
+      user: {
+        name: "Daily Bugle",
+        avatar: "/icons/icon.png"
+      },
+      content: "BREAKING: Spider-Man saves another day in New York City! Our photographers captured these amazing shots.",
+      image: "/icons/icon.png",
+      likes: 2341,
+      comments: 156,
+      shares: 78,
+      timestamp: "6 hours ago"
+    }
+  ]);
 
-  return (
-      <div className="relative overflow-hidden">
-        {/* Spider Web SVG Background */}
-        <div className="fixed inset-0 z-0">
-          <svg className="w-full h-full opacity-5" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <defs>
-              <pattern id="spiderweb" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M10,0 L10,20 M0,10 L20,10 M2,2 L18,18 M18,2 L2,18"
-                      stroke="white" strokeWidth="0.5" fill="none"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#spiderweb)"/>
-          </svg>
-        </div>
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        setUser(JSON.parse(userData));
+      } else {
+        router.push('/login');
+      }
+    }
+  }, [router]);
 
-        {/* Content */}
-        <div className="relative z-10">
-          {isLogin ? (
-              <LoginForm onSwitchToRegister={() => setIsLogin(false)} />
-          ) : (
-              <RegisterForm onSwitchToLogin={() => setIsLogin(true)} />
-          )}
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+    router.push('/login');
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-bg-black flex items-center justify-center">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-spiderman-red"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Image src="/icons/icon.png" alt="Loading" width={24} height={24} className="rounded-full" />
+          </div>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-bg-black">
+      <Background />
+      
+      <div className="relative z-10">
+        <Header user={user} onLogout={handleLogout} />
+        
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <LeftSidebar user={user} />
+            
+            <div className="lg:col-span-6">
+              <CreatePost user={user} />
+              <PostFeed posts={posts} />
+            </div>
+            
+            <RightSidebar />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
