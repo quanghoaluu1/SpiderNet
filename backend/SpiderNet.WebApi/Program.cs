@@ -50,6 +50,7 @@ if (app.Environment.IsDevelopment())
 }
 if (app.Environment.IsProduction())
 {
+    
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     try
@@ -61,6 +62,8 @@ if (app.Environment.IsProduction())
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "Database migration failed");
     }
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseCors("AllowNextJs");
