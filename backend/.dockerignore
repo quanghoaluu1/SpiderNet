@@ -1,0 +1,62 @@
+# .dockerignore for SpiderNet Backend
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+
+# NuGet packages
+**/packages/
+**/.nuget/
+
+# Visual Studio / Rider files
+**/.vs/
+**/.vscode/
+**/.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.sln.DotSettings.user
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+README*
+
+# Test files
+**/TestResults/
+**/*Tests/
+
+# Temporary files
+**/*.tmp
+**/*.temp
+**/*.log
+
+# Node modules (if any)
+**/node_modules/
+
+# Environment files
+**/.env
+**/.env.*
+
+# Docker files
+**/Dockerfile*
+**/.dockerignore
+**/docker-compose*
+
+# Coverage reports
+**/coverage/

@@ -19,7 +19,10 @@ using IMapper = MapsterMapper.IMapper;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(8080); // HTTP port
+});
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -44,6 +47,20 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+if (app.Environment.IsProduction())
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
+    {
+        await context.Database.MigrateAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Database migration failed");
+    }
 }
 
 app.UseCors("AllowNextJs");
