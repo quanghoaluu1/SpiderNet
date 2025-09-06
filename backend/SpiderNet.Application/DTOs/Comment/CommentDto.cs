@@ -11,7 +11,11 @@ public class CommentDto
     public string Content { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    
+    public string? ImageUrl { get; set; }
+    public string? VideoUrl { get; set; }
+    public string? GifUrl { get; set; }
+    public MediaType? MediaType { get; set; }
+    public bool HasMedia { get; set; }
     // User info
     public string UserFullName { get; set; } = string.Empty;
     public string UserDisplayName { get; set; } = string.Empty;

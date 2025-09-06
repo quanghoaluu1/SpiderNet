@@ -32,8 +32,8 @@ public class PostRepository : IPostRepository
     {
         return await _context.Posts
             .Include(p => p.User)
-            .Include(p => p.Reactions)
-            .Include(p => p.Comments)
+            .Include(p => p.Reactions).ThenInclude(l => l.User)
+            .Include(p => p.Comments).ThenInclude(c => c.User)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
     }
 

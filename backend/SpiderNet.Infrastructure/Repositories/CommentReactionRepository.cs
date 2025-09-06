@@ -18,6 +18,7 @@ public class CommentReactionRepository : ICommentReactionRepository
     public async Task<CommentReaction?> GetReactionAsync(Guid commentId, Guid userId)
     {
         return await _context.Set<CommentReaction>()
+            .Include(r => r.User)
             .FirstOrDefaultAsync(r => r.CommentId == commentId && r.UserId == userId);
     }
 

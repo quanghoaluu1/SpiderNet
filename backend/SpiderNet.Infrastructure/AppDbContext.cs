@@ -110,7 +110,16 @@ public class AppDbContext: DbContext
         modelBuilder.Entity<Comment>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Content).IsRequired().HasMaxLength(2000);
+            entity.Property(e => e.Content).HasMaxLength(2000);
+        
+            // Media fields
+            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+            entity.Property(e => e.VideoUrl).HasMaxLength(500);
+            entity.Property(e => e.GifUrl).HasMaxLength(500);
+            entity.Property(e => e.ImagePublicId).HasMaxLength(200);
+            entity.Property(e => e.VideoPublicId).HasMaxLength(200);
+            entity.Property(e => e.GifPublicId).HasMaxLength(200);
+            entity.Property(e => e.MediaType).HasConversion<int>();
         
             entity.HasOne(e => e.User)
                 .WithMany()
@@ -122,15 +131,15 @@ public class AppDbContext: DbContext
                 .HasForeignKey(e => e.PostId)
                 .OnDelete(DeleteBehavior.Cascade);
         
-            // Self-referencing for nested comments
             entity.HasOne(e => e.ParentComment)
                 .WithMany(c => c.Replies)
                 .HasForeignKey(e => e.ParentCommentId)
-                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete for replies
+                .OnDelete(DeleteBehavior.Restrict);
         
             entity.HasIndex(e => e.PostId);
             entity.HasIndex(e => e.ParentCommentId);
             entity.HasIndex(e => e.CreatedAt);
+            entity.HasIndex(e => e.MediaType);
         });
 
         // CommentReaction configuration

@@ -6,6 +6,7 @@ public interface ICloudinaryService
 {
     Task<CloudinaryUploadResult> UploadImageAsync(IFormFile file, string folder = "posts");
     Task<CloudinaryUploadResult> UploadVideoAsync(IFormFile file, string folder = "posts");
+    Task<CloudinaryUploadResult> UploadGifAsync(IFormFile file, string folder = "comments");
     Task<bool> DeleteResourceAsync(string publicId);
 }
 

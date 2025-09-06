@@ -13,6 +13,7 @@ using SpiderNet.Domain.Entities;
 using SpiderNet.Infrastructure;
 using SpiderNet.Infrastructure.Repositories;
 using SpiderNet.Infrastructure.Services;
+using SpiderNet.Infrastructure.Settings;
 using IMapper = MapsterMapper.IMapper;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,7 +25,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.AddSwaggerGen();
 builder.AddDbContext();
-
+builder.Services.Configure<CloudinarySetting>(builder.Configuration.GetSection("Cloudinary"));
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 builder.AddAppCors();
 builder.AddAppAuthentication();
 builder.Services.RegisterServices();

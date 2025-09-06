@@ -110,6 +110,51 @@ public class CloudinaryService : ICloudinaryService
         };
     }
 
+    public async Task<CloudinaryUploadResult> UploadGifAsync(IFormFile file, string folder = "comments")
+    {
+        if (file.Length <= 0)
+        {
+            throw new ArgumentException("File is empty");
+        }
+        var allowedTypes = new[] { "image/gif" };
+        if (!allowedTypes.Contains(file.ContentType.ToLower()))
+        {
+            throw new ArgumentException("Only GIF images are allowed");
+        }
+
+        if (file.Length > 20 * 1024 * 1024)
+        {
+            throw new ArgumentException("Image size cannot exceed 20MB");
+        }
+        using var stream = file.OpenReadStream();
+        var uploadParams = new ImageUploadParams()
+        {
+            File = new FileDescription(file.FileName, stream),
+            Folder = folder,
+            Transformation = new Transformation()
+                .Quality("auto")
+                .FetchFormat("auto")
+                .Width(400)
+                .Height(400)
+                .Crop("limit"),
+            UseFilename = false,
+            UniqueFilename = true,
+        };
+        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+        if (uploadResult.Error is not null)
+        {
+            throw new Exception($"Upload failed: {uploadResult.Error.Message}");
+        }
+        return new CloudinaryUploadResult
+        {
+            Url = uploadResult.SecureUrl.ToString(),
+            PublicId = uploadResult.PublicId,
+            Format = uploadResult.Format,
+            Bytes = uploadResult.Bytes,
+            Width = uploadResult.Width,
+            Height = uploadResult.Height
+        };
+    }
     public async Task<bool> DeleteResourceAsync(string publicId)
     {
         if (string.IsNullOrEmpty(publicId))

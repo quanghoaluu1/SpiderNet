@@ -53,12 +53,12 @@ public static class WebApplicationBuilderExtension
         {
             options.AddSecurityDefinition(name: "Bearer", securityScheme: new OpenApiSecurityScheme()
             {
-                Name = "Authorization",
+                // Name = "Authorization",
                 In = ParameterLocation.Header,
                 Description = "Please enter your token with this format: \"Bearer YOUR_TOKEN\"",
-                Type = SecuritySchemeType.ApiKey,
+                Type = SecuritySchemeType.Http,
                 BearerFormat = "JWT",
-                Scheme = "bearer"
+                Scheme = "Bearer"
             });
             options.AddSecurityRequirement(new OpenApiSecurityRequirement()
             {

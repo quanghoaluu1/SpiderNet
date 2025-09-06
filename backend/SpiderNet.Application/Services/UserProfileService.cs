@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using SpiderNet.Application.DTOs.User;
 using SpiderNet.Application.Interfaces;
+using SpiderNet.Application.Interfaces.Repositories;
 using SpiderNet.Domain.Common;
 using SpiderNet.Domain.Entities;
 

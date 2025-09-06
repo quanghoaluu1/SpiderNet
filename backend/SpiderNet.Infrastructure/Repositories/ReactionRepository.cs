@@ -16,7 +16,7 @@ public class ReactionRepository : IReactionRepository
 
     public async Task<Reaction?> GetReactionAsync(Guid postId, Guid userId)
     {
-        return await _context.Reactions
+        return await _context.Reactions.Include(r => r.User).Include(r => r.Post)
             .FirstOrDefaultAsync(r => r.PostId == postId && r.UserId == userId);
     }
 
@@ -57,7 +57,7 @@ public class ReactionRepository : IReactionRepository
 
     public async Task<ReactionSummaryDto> GetReactionsSummaryAsync(Guid postId)
     {
-        var reactions = await _context.Reactions
+        var reactions = await _context.Reactions.Include(r => r.User)
             .Where(r => r.PostId == postId)
             .GroupBy(r => r.Type)
             .Select(g => new { Type = g.Key, Count = g.Count() })

@@ -129,6 +129,7 @@ public class MappingConfig
             .Map(dest => dest.IsReply, src => src.ParentCommentId.HasValue)
             .Map(dest => dest.IsEdited, src => src.UpdatedAt > src.CreatedAt.AddMinutes(1))
             .Map(dest => dest.RepliesCount, src => src.Replies.Count(r => !r.IsDeleted))
+            .Map(dest => dest.HasMedia, src => src.HasMedia)
             .Ignore(dest => dest.ReactionsSummary)
             .Ignore(dest => dest.CurrentUserReaction)
             .Ignore(dest => dest.IsOwnComment)
@@ -144,7 +145,14 @@ public class MappingConfig
             .Map(dest => dest.CreatedAt, src => DateTime.UtcNow)
             .Map(dest => dest.UpdatedAt, src => DateTime.UtcNow)
             .Ignore(dest => dest.PostId)
-            .Ignore(dest => dest.UserId);
+            .Ignore(dest => dest.UserId)
+            .Ignore(dest => dest.ImageUrl)
+            .Ignore(dest => dest.VideoUrl)
+            .Ignore(dest => dest.GifUrl)
+            .Ignore(dest => dest.ImagePublicId)
+            .Ignore(dest => dest.VideoPublicId)
+            .Ignore(dest => dest.GifPublicId)
+            .Ignore(dest => dest.MediaType);
 
         // UpdateCommentRequest -> Comment
         TypeAdapterConfig<UpdateCommentRequest, Comment>

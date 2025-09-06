@@ -3,6 +3,7 @@ using Mapster;
 using Microsoft.AspNetCore.Identity;
 using SpiderNet.Application.DTOs.Auth;
 using SpiderNet.Application.Interfaces;
+using SpiderNet.Application.Interfaces.Repositories;
 using SpiderNet.Domain.Common;
 using SpiderNet.Domain.Entities;
 

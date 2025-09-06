@@ -4,6 +4,7 @@ using SpiderNet.Application.DTOs.Post;
 using SpiderNet.Application.DTOs.Reaction;
 using SpiderNet.Application.Extensions;
 using SpiderNet.Application.Interfaces;
+using SpiderNet.Application.Interfaces.Repositories;
 using SpiderNet.Application.Interfaces.Services;
 using SpiderNet.Domain.Common;
 using SpiderNet.Domain.Entities;
@@ -61,6 +62,7 @@ public class PostService : IPostService
             }
         }
         var createdPost = await _unitOfWork.PostRepository.CreateAsync(post);
+
         var postDto = await MapToPostDtoAsync(createdPost, userId);
         return Result<PostDto>.Success(postDto);
     }
@@ -168,7 +170,6 @@ public class PostService : IPostService
             };
             reaction = await _unitOfWork.ReactionRepository.AddReactionAsync(reaction);
         }
-
         var reactionDto = reaction.Adapt<ReactionDto>();
         return Result<ReactionDto>.Success(reactionDto);
     }
@@ -189,9 +190,12 @@ public class PostService : IPostService
         return Result<IEnumerable<ReactionDto>>.Success(reactionDtos);
     }
 
-    private async Task<PostDto> MapToPostDtoAsync(Post post, Guid? currentUserId = null)
+    private async Task<PostDto?> MapToPostDtoAsync(Post post, Guid? currentUserId = null)
     {
-        var postDto = post.Adapt<PostDto>();
+        var postWithNavigation = await _unitOfWork.PostRepository.GetByIdAsync(post.Id);
+        if (postWithNavigation == null)
+            return null;
+        var postDto = postWithNavigation.Adapt<PostDto>();
         postDto.ReactionsSummary = await MapToReactionSummaryAsync(post.Reactions);
         postDto.CurrentUserReaction = currentUserId.HasValue 
             ? post.Reactions.FirstOrDefault(r => r.UserId == currentUserId.Value)?.Type

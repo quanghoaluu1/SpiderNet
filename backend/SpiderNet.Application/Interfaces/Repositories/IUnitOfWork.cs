@@ -1,6 +1,4 @@
-﻿using SpiderNet.Application.Interfaces.Repositories;
-
-namespace SpiderNet.Application.Interfaces;
+﻿namespace SpiderNet.Application.Interfaces.Repositories;
 
 public interface IUnitOfWork
 {
@@ -8,4 +6,5 @@ public interface IUnitOfWork
     IPostRepository PostRepository { get; }
     ICommentRepository CommentRepository { get; }
     IReactionRepository ReactionRepository { get; }
+    ICommentReactionRepository CommentReactionRepository { get; }
 }
