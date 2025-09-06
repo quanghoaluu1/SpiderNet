@@ -33,8 +33,14 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
                 localStorage.setItem('user', JSON.stringify(response.user));
             }
             router.push('/');
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Đăng nhập thất bại');
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error && 'response' in err && err.response && 
+                typeof err.response === 'object' && 'data' in err.response && 
+                err.response.data && typeof err.response.data === 'object' && 
+                'message' in err.response.data && typeof err.response.data.message === 'string'
+                ? err.response.data.message
+                : 'Đăng nhập thất bại';
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
