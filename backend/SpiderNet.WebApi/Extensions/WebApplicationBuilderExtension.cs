@@ -40,7 +40,7 @@ public static class WebApplicationBuilderExtension
             options.AddPolicy("AllowNextJs",
                 policy =>
                 {
-                    policy.WithOrigins("http://localhost:3000")
+                    policy.WithOrigins("http://localhost:3000", "https://spider-net.vercel.app")
                         .AllowAnyMethod()
                         .AllowAnyHeader();
                 });
