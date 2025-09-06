@@ -6,6 +6,7 @@ import { authApi } from '@/services/api';
 import { LoginRequest } from '@/interfaces/Auth';
 import { useRouter } from 'next/navigation';
 import Image from "next/image";
+import { Eye, EyeOff } from "lucide-react";
 
 interface LoginFormProps {
     onSwitchToRegister: () => void;
@@ -14,6 +15,7 @@ interface LoginFormProps {
 export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
 
     const {
@@ -83,8 +85,8 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
                             <input
                                 id="email"
                                 type="text"
-                                {...register('email', {
-                                    required: 'Email là bắt buộc',
+                                {...register('emailOrUsername', {
+                                    required: 'Email or username is required',
                                     // pattern: {
                                     //     value: /^\S+@\S+$/i,
                                     //     message: 'Email không hợp lệ',
@@ -93,10 +95,10 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
                                 className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white placeholder-white/50
                          rounded-lg focus:outline-none focus:ring-2 focus:ring-spiderman-red focus:border-transparent
                          backdrop-blur-sm transition-all duration-200"
-                                placeholder="Nhập email của bạn"
+                                placeholder="Enter your email or username"
                             />
-                            {errors.email && (
-                                <p className="mt-1 text-sm text-red-300">{errors.email.message}</p>
+                            {errors.emailOrUsername && (
+                                <p className="mt-1 text-sm text-red-300">{errors.emailOrUsername.message}</p>
                             )}
                         </div>
 
@@ -104,21 +106,34 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
                             <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">
                                 Password
                             </label>
-                            <input
-                                id="password"
-                                type="password"
-                                {...register('password', {
-                                    required: 'Mật khẩu là bắt buộc',
-                                    minLength: {
-                                        value: 6,
-                                        message: 'Mật khẩu phải có ít nhất 6 ký tự',
-                                    },
-                                })}
-                                className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white placeholder-white/50
-                         rounded-lg focus:outline-none focus:ring-2 focus:ring-spiderman-red focus:border-transparent
-                         backdrop-blur-sm transition-all duration-200"
-                                placeholder="Nhập mật khẩu"
-                            />
+                            <div className="relative">
+                                <input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    {...register('password', {
+                                        required: 'Password is required',
+                                        minLength: {
+                                            value: 6,
+                                            message: 'Mật khẩu phải có ít nhất 6 ký tự',
+                                        },
+                                    })}
+                                    className="w-full px-4 py-3 pr-12 bg-white/10 border border-white/20 text-white placeholder-white/50
+                             rounded-lg focus:outline-none focus:ring-2 focus:ring-spiderman-red focus:border-transparent
+                             backdrop-blur-sm transition-all duration-200"
+                                    placeholder="Enter your password"
+                                />
+                                <button
+                                    type="button"
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/50 hover:text-white transition-colors"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-5 w-5" />
+                                    ) : (
+                                        <Eye className="h-5 w-5" />
+                                    )}
+                                </button>
+                            </div>
                             {errors.password && (
                                 <p className="mt-1 text-sm text-red-300">{errors.password.message}</p>
                             )}
