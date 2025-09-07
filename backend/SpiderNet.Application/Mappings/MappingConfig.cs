@@ -27,18 +27,18 @@ public class MappingConfig
             .NewConfig()
             .Map(dest => dest.FullName, src => $"{src.FirstName} {src.LastName}".Trim());
 
-        TypeAdapterConfig<RegisterRequest, User>
-            .NewConfig()
-            .Map(dest => dest.Email, src => src.Email.ToLower().Trim())
-            .Map(dest => dest.Username, src => src.Username.ToLower().Trim())
-            .Map(dest => dest.FirstName, src => src.FirstName.Trim())
-            .Map(dest => dest.LastName, src => src.LastName.Trim())
-            .Map(dest => dest.Id, src => Guid.NewGuid())
-            .Map(dest => dest.CreatedAt, src => DateTime.UtcNow)
-            .Map(dest => dest.UpdatedAt, src => DateTime.UtcNow)
-            .Map(dest => dest.IsActive, src => true)
-            .Map(dest => dest.IsEmailConfirmed, src => false)
-            .Ignore(dest => dest.PasswordHash);
+         TypeAdapterConfig<RegisterRequest, User>
+             .NewConfig()
+             .Map(dest => dest.Email, src => src.Email != null ? src.Email.ToLower().Trim() : null)
+             .Map(dest => dest.FirstName, src => src.FirstName != null ? src.FirstName.Trim() : null)
+             .Map(dest => dest.LastName, src => src.LastName != null ? src.LastName.Trim() : null)
+             .Map(dest => dest.AvatarUrl, src => src.AvatarUrl)
+             .Map(dest => dest.Id, src => Guid.NewGuid())
+             .Map(dest => dest.CreatedAt, src => DateTime.UtcNow)
+             .Map(dest => dest.UpdatedAt, src => DateTime.UtcNow)
+             .Map(dest => dest.IsActive, src => true)
+             .Map(dest => dest.IsEmailConfirmed, src => false)
+             .Ignore(dest => dest.PasswordHash);
 
         TypeAdapterConfig<User, AuthResponse>
             .NewConfig()
@@ -50,8 +50,7 @@ public class MappingConfig
         TypeAdapterConfig<User, UserProfileDto>
             .NewConfig()
             .Map(dest => dest.FullName, src => $"{src.FirstName} {src.LastName}".Trim())
-            .Map(dest => dest.DisplayName, src => 
-                string.IsNullOrWhiteSpace(src.FirstName) ? src.Username : src.FirstName)
+            .Map(dest => dest.DisplayName, src =>  src.FirstName)
             .Map(dest => dest.MemberSince, src => src.CreatedAt.ToString("MMMM yyyy"))
             .Map(dest => dest.Age, src => src.DateOfBirth.HasValue ? 
                 DateTime.UtcNow.Year - src.DateOfBirth.Value.Year : 0)
@@ -76,9 +75,7 @@ public class MappingConfig
         TypeAdapterConfig<Post, PostDto>
             .NewConfig()
             .Map(dest => dest.UserFullName, src => $"{src.User.FirstName} {src.User.LastName}".Trim())
-            .Map(dest => dest.UserDisplayName, src => 
-                string.IsNullOrWhiteSpace(src.User.FirstName) ? src.User.Username : src.User.FirstName)
-            .Map(dest => dest.Username, src => src.User.Username)
+            .Map(dest => dest.UserDisplayName, src => src.User.FirstName)
             .Map(dest => dest.UserAvatarUrl, src => src.User.AvatarUrl)
             .Map(dest => dest.TimeAgo, src => GetTimeAgo(src.CreatedAt))
             .Ignore(dest => dest.ReactionsSummary)
@@ -121,9 +118,7 @@ public class MappingConfig
         TypeAdapterConfig<Comment, CommentDto>
             .NewConfig()
             .Map(dest => dest.UserFullName, src => $"{src.User.FirstName} {src.User.LastName}".Trim())
-            .Map(dest => dest.UserDisplayName, src => 
-                string.IsNullOrWhiteSpace(src.User.FirstName) ? src.User.Username : src.User.FirstName)
-            .Map(dest => dest.Username, src => src.User.Username)
+            .Map(dest => dest.UserDisplayName, src =>  src.User.FirstName)
             .Map(dest => dest.UserAvatarUrl, src => src.User.AvatarUrl)
             .Map(dest => dest.TimeAgo, src => GetTimeAgo(src.CreatedAt))
             .Map(dest => dest.IsReply, src => src.ParentCommentId.HasValue)
@@ -168,7 +163,6 @@ public class MappingConfig
         TypeAdapterConfig<Reaction, ReactionDto>
             .NewConfig()
             .Map(dest => dest.UserFullName, src => $"{src.User.FirstName} {src.User.LastName}".Trim())
-            .Map(dest => dest.Username, src => src.User.Username)
             .Map(dest => dest.UserAvatarUrl, src => src.User.AvatarUrl)
             .Map(dest => dest.TypeEmoji, src => src.Type.GetEmoji())
             .Map(dest => dest.TypeName, src => src.Type.GetDisplayName());
@@ -177,7 +171,6 @@ public class MappingConfig
         TypeAdapterConfig<CommentReaction, CommentReactionDto>
             .NewConfig()
             .Map(dest => dest.UserFullName, src => $"{src.User.FirstName} {src.User.LastName}".Trim())
-            .Map(dest => dest.Username, src => src.User.Username)
             .Map(dest => dest.UserAvatarUrl, src => src.User.AvatarUrl)
             .Map(dest => dest.TypeEmoji, src => src.Type.GetEmoji())
             .Map(dest => dest.TypeName, src => src.Type.GetDisplayName());

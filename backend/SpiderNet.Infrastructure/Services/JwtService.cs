@@ -24,7 +24,6 @@ public class JwtService : IJwtService
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Name, user.Username),
             new Claim("firstName", user.FirstName),
             new Claim("lastName", user.LastName)
         };

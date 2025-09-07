@@ -28,10 +28,10 @@ public class AuthService : IAuthService
     {
         try
         {
-            var user = await _unitOfWork.UserRepository.GetByUsernameOrEmailAsync(request.EmailOrUsername);
+            var user = await _unitOfWork.UserRepository.GetByEmailAsync(request.Email);
             if (user == null)
             {
-                return Result<AuthResponse>.Failure("Invalid username or password.");
+                return Result<AuthResponse>.Failure("Account not found.");
             }
             
             var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
@@ -70,19 +70,14 @@ public class AuthService : IAuthService
                 return Result<AuthResponse>.Failure(passwordValidation.Errors);
             }
 
+            if (string.IsNullOrWhiteSpace(request.Email) && string.IsNullOrWhiteSpace(request.Username))
+            {
+                return Result<AuthResponse>.Failure("Email or username is required");
+            }
+
             if (await _unitOfWork.UserRepository.ExistByEmailAsync(request.Email))
             {
                 return Result<AuthResponse>.Failure("Email already exists");
-            }
-            
-            if (await _unitOfWork.UserRepository.ExistByUsernameAsync(request.Username))
-            {
-                return Result<AuthResponse>.Failure("Username already exists");
-            }
-
-            if (string.IsNullOrEmpty(request.Username))
-            {
-                request.Username = request.Email.Split('@')[0];
             }
 
             var user = request.Adapt<User>();

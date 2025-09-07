@@ -21,24 +21,7 @@ public class UserRepository : IUserRepository
     {
         return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower() && u.IsActive);
     }
-
-    public async Task<User?> GetByUsernameAsync(string username)
-    {
-        if (string.IsNullOrEmpty(username))
-        {
-            return null;
-        }
-        return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower() && u.IsActive);
-    }
-
-    public async Task<User?> GetByUsernameOrEmailAsync(string usernameOrEmail)
-    {
-        if (string.IsNullOrEmpty(usernameOrEmail))
-        {
-            return null;
-        }
-        return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => (u.Username.ToLower() == usernameOrEmail.ToLower() || u.Email.ToLower() == usernameOrEmail.ToLower()) && u.IsActive);
-    }
+    
 
     public async Task<User> CreateAsync(User user)
     {
@@ -88,9 +71,8 @@ public class UserRepository : IUserRepository
         return await _context.Users
             .AsNoTracking()
             .AnyAsync(u => 
-                (u.Email.ToLower() == email.ToLower() || 
-                 u.Username.ToLower() == username.ToLower()) 
-                && u.IsActive);
+                (u.Email.ToLower() == email.ToLower() 
+                && u.IsActive));
     }
 
     public async Task<bool> ExistByEmailAsync(string email)
@@ -101,16 +83,6 @@ public class UserRepository : IUserRepository
         return await _context.Users
             .AsNoTracking()
             .AnyAsync(u => u.Email.ToLower() == email.ToLower() && u.IsActive);
-    }
-
-    public async Task<bool> ExistByUsernameAsync(string username)
-    {
-        if (string.IsNullOrWhiteSpace(username))
-            return false;
-
-        return await _context.Users
-            .AsNoTracking()
-            .AnyAsync(u => u.Username.ToLower() == username.ToLower() && u.IsActive);
     }
 
     public async Task<IEnumerable<User>> GetAllAsync()

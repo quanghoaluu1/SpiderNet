@@ -52,14 +52,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     setError("");
 
     try {
-      // Filter out empty email and username fields
       const filteredData = { ...data };
-      if (!filteredData.email || filteredData.email.trim() === "") {
-        delete filteredData.email;
-      }
-      if (!filteredData.username || filteredData.username.trim() === "") {
-        delete filteredData.username;
-      }
 
       const response = await authApi.register(filteredData);
       if (typeof window !== "undefined") {
@@ -286,75 +279,33 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-white/90 mb-2"
-                >
-                  Email <span className="text-white/60">(optional if username provided)</span>
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  {...register("email", {
-                    validate: (value, formValues) => {
-                      if (!value && !formValues.username) {
-                        return "Either email or username is required";
-                      }
-                      if (value && !/^\S+@\S+$/i.test(value)) {
-                        return "Invalid email format";
-                      }
-                      return true;
-                    },
-                  })}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white placeholder-white/50
-                           rounded-lg focus:outline-none focus:ring-2 focus:ring-spiderman-blue focus:border-transparent
-                           backdrop-blur-sm transition-all duration-200"
-                  placeholder="Enter your email"
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-300">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="username"
-                  className="block text-sm font-medium text-white/90 mb-2"
-                >
-                  Username <span className="text-white/60">(optional if email provided)</span>
-                </label>
-                <input
-                  id="username"
-                  type="text"
-                  {...register("username", {
-                    validate: (value, formValues) => {
-                      if (!value && !formValues.email) {
-                        return "Either email or username is required";
-                      }
-                      if (value && value.length < 3) {
-                        return "Username must be at least 3 characters";
-                      }
-                      if (value && !/^[a-zA-Z0-9_]+$/.test(value)) {
-                        return "Username can only contain letters, numbers, and underscores";
-                      }
-                      return true;
-                    },
-                  })}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white placeholder-white/50
-                           rounded-lg focus:outline-none focus:ring-2 focus:ring-spiderman-blue focus:border-transparent
-                           backdrop-blur-sm transition-all duration-200"
-                  placeholder="Enter your username"
-                />
-                {errors.username && (
-                  <p className="mt-1 text-sm text-red-300">
-                    {errors.username.message}
-                  </p>
-                )}
-              </div>
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-white/90 mb-2"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^\S+@\S+$/i,
+                    message: "Invalid email format",
+                  },
+                })}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white placeholder-white/50
+                         rounded-lg focus:outline-none focus:ring-2 focus:ring-spiderman-blue focus:border-transparent
+                         backdrop-blur-sm transition-all duration-200"
+                placeholder="Enter your email"
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-300">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div>

@@ -8,6 +8,7 @@ public class RegisterRequest
         public string LastName { get; set; } = string.Empty;
         public DateOnly? Birthday { get; set; }
         public string Gender { get; set; } = string.Empty;
+        public string AvatarUrl { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string ConfirmPassword { get; set; } = string.Empty;
 }
