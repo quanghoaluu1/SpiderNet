@@ -24,170 +24,253 @@ public class PostService : IPostService
     }
     public async Task<Result<PostDto>> CreatePostAsync(Guid userId, CreatePostRequest request)
     {
-        if (string.IsNullOrEmpty(request.Content) && request.Image is null && request.Video is null)
+        try
         {
-            return Result<PostDto>.Failure("Post must have content or at least one image or video.");
-        }
-        var post = request.Adapt<Post>();
-        post.UserId = userId;
-        if (request.Image is not null)
-        {
-            try
+            if (string.IsNullOrEmpty(request.Content) && request.Image is null && request.Video is null)
             {
-                var imageResult = await _cloudinaryService.UploadImageAsync(request.Image, "spidernet/posts");
-                post.ImageUrl = imageResult.Url;
-                post.ImagePublicId = imageResult.PublicId;
+                return Result<PostDto>.Failure("Post must have content or at least one image or video.");
             }
-            catch (Exception e)
+            
+            var post = request.Adapt<Post>();
+            post.UserId = userId;
+            
+            if (request.Image is not null)
             {
-                return Result<PostDto>.Failure($"Upload image failed: {e.Message}");
-            }
-        }
-
-        if (request.Video is not null)
-        {
-            try
-            {
-                var videoResult = await _cloudinaryService.UploadVideoAsync(request.Video, "spidernet/posts");
-                post.VideoUrl = videoResult.Url;
-                post.VideoPublicId = videoResult.PublicId;
-            }
-            catch (Exception e)
-            {
-                if (!string.IsNullOrEmpty(post.ImagePublicId))
+                try
                 {
-                    await _cloudinaryService.DeleteResourceAsync(post.ImagePublicId);
+                    var imageResult = await _cloudinaryService.UploadImageAsync(request.Image, "spidernet/posts");
+                    post.ImageUrl = imageResult.Url;
+                    post.ImagePublicId = imageResult.PublicId;
                 }
-                return Result<PostDto>.Failure($"Upload video failed: {e.Message}");
+                catch (Exception e)
+                {
+                    return Result<PostDto>.Failure($"Upload image failed: {e.Message}");
+                }
             }
-        }
-        var createdPost = await _unitOfWork.PostRepository.CreateAsync(post);
 
-        var postDto = await MapToPostDtoAsync(createdPost, userId);
-        return Result<PostDto>.Success(postDto);
+            if (request.Video is not null)
+            {
+                try
+                {
+                    var videoResult = await _cloudinaryService.UploadVideoAsync(request.Video, "spidernet/posts");
+                    post.VideoUrl = videoResult.Url;
+                    post.VideoPublicId = videoResult.PublicId;
+                }
+                catch (Exception e)
+                {
+                    if (!string.IsNullOrEmpty(post.ImagePublicId))
+                    {
+                        try
+                        {
+                            await _cloudinaryService.DeleteResourceAsync(post.ImagePublicId);
+                        }
+                        catch
+                        {
+                            // Ignore cleanup failures
+                        }
+                    }
+                    return Result<PostDto>.Failure($"Upload video failed: {e.Message}");
+                }
+            }
+            
+            var createdPost = await _unitOfWork.PostRepository.CreateAsync(post);
+            var postDto = await MapToPostDtoAsync(createdPost, userId);
+            
+            return Result<PostDto>.Success(postDto);
+        }
+        catch (Exception ex)
+        {
+            return Result<PostDto>.Failure($"An error occurred while creating post: {ex.Message}");
+        }
     }
 
     public async Task<Result<PostDetailDto>> GetPostAsync(Guid postId, Guid? currentUserId = null)
     {
-        var post = await _unitOfWork.PostRepository.GetDetailByIdAsync(postId);
-        if (post == null)
-            return Result<PostDetailDto>.Failure("Post not found");
+        try
+        {
+            var post = await _unitOfWork.PostRepository.GetDetailByIdAsync(postId);
+            if (post == null)
+                return Result<PostDetailDto>.Failure("Post not found");
 
-        var postDto = await MapToPostDetailDtoAsync(post, currentUserId);
-        return Result<PostDetailDto>.Success(postDto);
+            var postDto = await MapToPostDetailDtoAsync(post, currentUserId);
+            return Result<PostDetailDto>.Success(postDto);
+        }
+        catch (Exception ex)
+        {
+            return Result<PostDetailDto>.Failure($"An error occurred while retrieving post: {ex.Message}");
+        }
     }
 
     public async Task<Result<PostDto>> UpdatePostAsync(Guid postId, Guid userId, UpdatePostRequest request)
     {
-        var post = await _unitOfWork.PostRepository.GetByIdAsync(postId);
-        if (post == null)
-            return Result<PostDto>.Failure("Post not found");
+        try
+        {
+            var post = await _unitOfWork.PostRepository.GetByIdAsync(postId);
+            if (post == null)
+                return Result<PostDto>.Failure("Post not found");
 
-        if (post.UserId != userId)
-            return Result<PostDto>.Failure("You can only edit your own posts");
+            if (post.UserId != userId)
+                return Result<PostDto>.Failure("You can only edit your own posts");
 
-        request.Adapt(post);
+            request.Adapt(post);
 
-        var updatedPost = await _unitOfWork.PostRepository.UpdateAsync(post);
-        var postDto = await MapToPostDtoAsync(updatedPost, userId);
+            var updatedPost = await _unitOfWork.PostRepository.UpdateAsync(post);
+            var postDto = await MapToPostDtoAsync(updatedPost, userId);
 
-        return Result<PostDto>.Success(postDto);
+            return Result<PostDto>.Success(postDto);
+        }
+        catch (Exception ex)
+        {
+            return Result<PostDto>.Failure($"An error occurred while updating post: {ex.Message}");
+        }
     }
 
     public async Task<Result<bool>> DeletePostAsync(Guid postId, Guid userId)
     {
-        var post = await _unitOfWork.PostRepository.GetByIdAsync(postId);
-        if (post == null)
-            return Result<bool>.Failure("Post not found");
+        try
+        {
+            var post = await _unitOfWork.PostRepository.GetByIdAsync(postId);
+            if (post == null)
+                return Result<bool>.Failure("Post not found");
 
-        if (post.UserId != userId)
-            return Result<bool>.Failure("You can only delete your own posts");
+            if (post.UserId != userId)
+                return Result<bool>.Failure("You can only delete your own posts");
 
-        if (!string.IsNullOrEmpty(post.ImagePublicId))
-            await _cloudinaryService.DeleteResourceAsync(post.ImagePublicId);
+            // Clean up media files
+            try
+            {
+                if (!string.IsNullOrEmpty(post.ImagePublicId))
+                    await _cloudinaryService.DeleteResourceAsync(post.ImagePublicId);
 
-        if (!string.IsNullOrEmpty(post.VideoPublicId))
-            await _cloudinaryService.DeleteResourceAsync(post.VideoPublicId);
+                if (!string.IsNullOrEmpty(post.VideoPublicId))
+                    await _cloudinaryService.DeleteResourceAsync(post.VideoPublicId);
+            }
+            catch (Exception ex)
+            {
+                // Log media cleanup failure but continue with post deletion
+                // Media cleanup failure shouldn't prevent post deletion
+            }
 
-        var result = await _unitOfWork.PostRepository.DeleteAsync(postId);
-        return Result<bool>.Success(result);
+            var result = await _unitOfWork.PostRepository.DeleteAsync(postId);
+            return Result<bool>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            return Result<bool>.Failure($"An error occurred while deleting post: {ex.Message}");
+        }
     }
 
     public async Task<Result<IEnumerable<PostDto>>> GetUserPostsAsync(Guid userId, Guid? currentUserId = null, int pageNumber = 1, int pageSize = 20)
     {
-        var posts = await _unitOfWork.PostRepository.GetUserPostsAsync(userId, pageNumber, pageSize);
-        var postDtos = new List<PostDto>();
-
-        foreach (var post in posts)
+        try
         {
-            var dto = await MapToPostDtoAsync(post, currentUserId);
-            postDtos.Add(dto);
-        }
+            var posts = await _unitOfWork.PostRepository.GetUserPostsAsync(userId, pageNumber, pageSize);
+            var postDtos = new List<PostDto>();
 
-        return Result<IEnumerable<PostDto>>.Success(postDtos);
+            foreach (var post in posts)
+            {
+                var dto = await MapToPostDtoAsync(post, currentUserId);
+                postDtos.Add(dto);
+            }
+
+            return Result<IEnumerable<PostDto>>.Success(postDtos);
+        }
+        catch (Exception ex)
+        {
+            return Result<IEnumerable<PostDto>>.Failure($"An error occurred while retrieving user posts: {ex.Message}");
+        }
     }
 
     public async Task<Result<IEnumerable<PostDto>>> GetNewsFeedAsync(Guid userId, int pageNumber = 1, int pageSize = 20)
     {
-        var posts = await _unitOfWork.PostRepository.GetNewsFeedAsync(userId, pageNumber, pageSize);
-        var postDtos = new List<PostDto>();
-
-        foreach (var post in posts)
+        try
         {
-            var dto = await MapToPostDtoAsync(post, userId);
-            postDtos.Add(dto);
-        }
+            var posts = await _unitOfWork.PostRepository.GetNewsFeedAsync(userId, pageNumber, pageSize);
+            var postDtos = new List<PostDto>();
 
-        return Result<IEnumerable<PostDto>>.Success(postDtos);
+            foreach (var post in posts)
+            {
+                var dto = await MapToPostDtoAsync(post, userId);
+                postDtos.Add(dto);
+            }
+
+            return Result<IEnumerable<PostDto>>.Success(postDtos);
+        }
+        catch (Exception ex)
+        {
+            return Result<IEnumerable<PostDto>>.Failure($"An error occurred while retrieving news feed: {ex.Message}");
+        }
     }
 
     public async Task<Result<ReactionDto>> AddReactionAsync(Guid postId, Guid userId, ReactionType reactionType)
     {
-        var existingReaction = await _unitOfWork.ReactionRepository.GetReactionAsync(postId, userId);
-
-        Reaction reaction;
-
-        if (existingReaction != null)
+        try
         {
-            if (existingReaction.Type == reactionType)
+            var existingReaction = await _unitOfWork.ReactionRepository.GetReactionAsync(postId, userId);
+
+            Reaction reaction;
+
+            if (existingReaction != null)
             {
-                await _unitOfWork.ReactionRepository.RemoveReactionAsync(postId, userId);
-                return Result<ReactionDto>.Success(null!); // Removed
+                if (existingReaction.Type == reactionType)
+                {
+                    await _unitOfWork.ReactionRepository.RemoveReactionAsync(postId, userId);
+                    return Result<ReactionDto>.Success(null!); // Removed
+                }
+                else
+                {
+                    existingReaction.Type = reactionType;
+                    reaction = await _unitOfWork.ReactionRepository.UpdateReactionAsync(existingReaction);
+                }
             }
             else
             {
-                existingReaction.Type = reactionType;
-                reaction = await _unitOfWork.ReactionRepository.UpdateReactionAsync(existingReaction);
+                reaction = new Reaction
+                {
+                    PostId = postId,
+                    UserId = userId,
+                    Type = reactionType
+                };
+                reaction = await _unitOfWork.ReactionRepository.AddReactionAsync(reaction);
             }
+            
+            var reactionDto = reaction.Adapt<ReactionDto>();
+            return Result<ReactionDto>.Success(reactionDto);
         }
-        else
+        catch (Exception ex)
         {
-            reaction = new Reaction
-            {
-                PostId = postId,
-                UserId = userId,
-                Type = reactionType
-            };
-            reaction = await _unitOfWork.ReactionRepository.AddReactionAsync(reaction);
+            return Result<ReactionDto>.Failure($"An error occurred while adding reaction: {ex.Message}");
         }
-        var reactionDto = reaction.Adapt<ReactionDto>();
-        return Result<ReactionDto>.Success(reactionDto);
     }
 
     public async Task<Result<bool>> RemoveReactionAsync(Guid postId, Guid userId)
     {
-        var result = await _unitOfWork.ReactionRepository.RemoveReactionAsync(postId, userId);
-        return Result<bool>.Success(result);
+        try
+        {
+            var result = await _unitOfWork.ReactionRepository.RemoveReactionAsync(postId, userId);
+            return Result<bool>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            return Result<bool>.Failure($"An error occurred while removing reaction: {ex.Message}");
+        }
     }
 
     public async Task<Result<IEnumerable<ReactionDto>>> GetPostReactionsAsync(Guid postId, ReactionType? type = null, int limit = 20)
     {
-        var reactions = type.HasValue 
-            ? await _unitOfWork.ReactionRepository.GetReactionsByTypeAsync(postId, type.Value, limit)
-            : await _unitOfWork.ReactionRepository.GetPostReactionsAsync(postId, limit);
+        try
+        {
+            var reactions = type.HasValue 
+                ? await _unitOfWork.ReactionRepository.GetReactionsByTypeAsync(postId, type.Value, limit)
+                : await _unitOfWork.ReactionRepository.GetPostReactionsAsync(postId, limit);
 
-        var reactionDtos = reactions.Adapt<IEnumerable<ReactionDto>>();
-        return Result<IEnumerable<ReactionDto>>.Success(reactionDtos);
+            var reactionDtos = reactions.Adapt<IEnumerable<ReactionDto>>();
+            return Result<IEnumerable<ReactionDto>>.Success(reactionDtos);
+        }
+        catch (Exception ex)
+        {
+            return Result<IEnumerable<ReactionDto>>.Failure($"An error occurred while retrieving post reactions: {ex.Message}");
+        }
     }
 
     private async Task<PostDto?> MapToPostDtoAsync(Post post, Guid? currentUserId = null)

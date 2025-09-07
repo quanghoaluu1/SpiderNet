@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SpiderNet.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class UpdateUsers : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -28,10 +28,10 @@ namespace SpiderNet.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     FirstName = table.Column<string>(type: "text", nullable: false),
                     LastName = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     Birthday = table.Column<DateOnly>(type: "date", nullable: true),
                     Gender = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     IsEmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),

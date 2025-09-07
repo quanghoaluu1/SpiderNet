@@ -52,7 +52,16 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     setError("");
 
     try {
-      const response = await authApi.register(data);
+      // Filter out empty email and username fields
+      const filteredData = { ...data };
+      if (!filteredData.email || filteredData.email.trim() === "") {
+        delete filteredData.email;
+      }
+      if (!filteredData.username || filteredData.username.trim() === "") {
+        delete filteredData.username;
+      }
+
+      const response = await authApi.register(filteredData);
       if (typeof window !== "undefined") {
         localStorage.setItem("token", response.token);
         localStorage.setItem("user", JSON.stringify(response.user));

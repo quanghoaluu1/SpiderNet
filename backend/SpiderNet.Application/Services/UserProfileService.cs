@@ -24,65 +24,94 @@ public class UserProfileService : IUserProfileService
 
     public async Task<Result<UserProfileDto>> GetUserProfileAsync(Guid userId, Guid? currentUserId = null)
     {
-        var user = await _unitOfWork.UserRepository.GetUserProfileAsync(userId);
-        if (user == null)
+        try
         {
-            return Result<UserProfileDto>.Failure("User not found.");
+            var user = await _unitOfWork.UserRepository.GetUserProfileAsync(userId);
+            if (user == null)
+            {
+                return Result<UserProfileDto>.Failure("User not found.");
+            }
+            
+            var profile = user.Adapt<UserProfileDto>();
+            profile.IsOwnProfile = currentUserId.HasValue && currentUserId.Value == user.Id;
+            
+            if (!profile.IsOwnProfile && user.IsPrivate)
+            {
+                profile.Email = user.ShowEmail ? profile.Email : string.Empty;
+                profile.DateOfBirth = user is { ShowDateOfBirth: true, DateOfBirth: not null } ? user.DateOfBirth : null;
+                profile.PhoneNumber = user.ShowPhoneNumber ? profile.PhoneNumber : string.Empty;
+            }
+            
+            return Result<UserProfileDto>.Success(profile);
         }
-        var profile = user.Adapt<UserProfileDto>();
-        profile.IsOwnProfile = currentUserId.HasValue && currentUserId.Value == user.Id;
-        if (!profile.IsOwnProfile && user.IsPrivate)
+        catch (Exception ex)
         {
-            profile.Email = user.ShowEmail ? profile.Email : string.Empty;
-            profile.DateOfBirth = user is { ShowDateOfBirth: true, DateOfBirth: not null } ? user.DateOfBirth : null;
-            profile.PhoneNumber = user.ShowPhoneNumber ? profile.PhoneNumber : string.Empty;
+            return Result<UserProfileDto>.Failure($"An error occurred while retrieving user profile: {ex.Message}");
         }
-        return Result<UserProfileDto>.Success(profile);
     }
     
     public async Task<Result<UserProfileDto>> UpdateProfileAsync(Guid userId, UpdateProfileRequest request)
     {
-        var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
-        if (user == null)
-            return Result<UserProfileDto>.Failure("User not found");
+        try
+        {
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null)
+                return Result<UserProfileDto>.Failure("User not found");
 
-        if (request.DateOfBirth.HasValue && request.DateOfBirth.Value > DateTime.UtcNow.AddYears(-13))
-            return Result<UserProfileDto>.Failure("User must be at least 13 years old");
+            if (request.DateOfBirth.HasValue && request.DateOfBirth.Value > DateTime.UtcNow.AddYears(-13))
+                return Result<UserProfileDto>.Failure("User must be at least 13 years old");
 
-        request.Adapt(user);
-        
-        var updatedUser = await _unitOfWork.UserRepository.UpdateProfileAsync(user);
-        var profile = updatedUser.Adapt<UserProfileDto>();
-        profile.IsOwnProfile = true;
+            request.Adapt(user);
+            
+            var updatedUser = await _unitOfWork.UserRepository.UpdateProfileAsync(user);
+            var profile = updatedUser.Adapt<UserProfileDto>();
+            profile.IsOwnProfile = true;
 
-        return Result<UserProfileDto>.Success(profile);
+            return Result<UserProfileDto>.Success(profile);
+        }
+        catch (Exception ex)
+        {
+            return Result<UserProfileDto>.Failure($"An error occurred while updating profile: {ex.Message}");
+        }
     }
 
     public async Task<Result<bool>> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
     {
-        if (request.NewPassword != request.ConfirmNewPassword)
+        try
         {
-            return Result<bool>.Failure("New passwords do not match.");
+            if (request.NewPassword != request.ConfirmNewPassword)
+            {
+                return Result<bool>.Failure("New passwords do not match.");
+            }
+            
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return Result<bool>.Failure("User not found.");
+            }
+            
+            var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.CurrentPassword);
+            if (verificationResult == PasswordVerificationResult.Failed)
+            {
+                return Result<bool>.Failure("Current password is incorrect.");
+            }
+            
+            var passwordValidation = _passwordValidationService.ValidatePassword(request.NewPassword);
+            if (!passwordValidation.IsValid)
+            {
+                return Result<bool>.Failure(passwordValidation.Errors);
+            }
+            
+            user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+            await _unitOfWork.UserRepository.UpdateAsync(user);
+            
+            return Result<bool>.Success(true);
         }
-        var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
-        if (user == null)
+        catch (Exception ex)
         {
-            return Result<bool>.Failure("User not found.");
+            return Result<bool>.Failure($"An error occurred while changing password: {ex.Message}");
         }
-        var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.CurrentPassword);
-        if (verificationResult == PasswordVerificationResult.Failed)
-        {
-            return Result<bool>.Failure("Current password is incorrect.");
-        }
-        var passwordValidation = _passwordValidationService.ValidatePassword(request.NewPassword);
-        if (!passwordValidation.IsValid)
-        {
-            return Result<bool>.Failure(passwordValidation.Errors);
-        }
-        user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
-        user.UpdatedAt = DateTime.UtcNow;
-        await _unitOfWork.UserRepository.UpdateAsync(user);
-        return Result<bool>.Success(true);
     }
 
     public Task<Result<UserPrivateSettingDto>> GetPrivacySettingsAsync(Guid userId)
