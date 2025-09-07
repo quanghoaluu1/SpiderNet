@@ -12,7 +12,7 @@ using SpiderNet.Infrastructure;
 namespace SpiderNet.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250907082355_UpdateUser")]
+    [Migration("20250907092223_UpdateUser")]
     partial class UpdateUser
     {
         /// <inheritdoc />
