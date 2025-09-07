@@ -8,6 +8,7 @@ public class UserDto
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string FullName => $"{FirstName} {LastName}".Trim();
+    public string AvatarUrl { get; set; } = string.Empty;
     public DateOnly? Birthday { get; set; }
     public string Gender { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
