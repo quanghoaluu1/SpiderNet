@@ -14,6 +14,7 @@ import { User, Post } from '@/types';
 export default function HomePage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [posts] = useState<Post[]>([
     {
       id: 1,
@@ -99,8 +100,11 @@ export default function HomePage() {
             <LeftSidebar user={user} />
             
             <div className="lg:col-span-6">
-              <CreatePost user={user} />
-              <PostFeed posts={posts} />
+              <CreatePost 
+                user={user} 
+                onPostCreated={() => setRefreshTrigger(prev => prev + 1)}
+              />
+              <PostFeed refreshTrigger={refreshTrigger} />
             </div>
             
             <RightSidebar />

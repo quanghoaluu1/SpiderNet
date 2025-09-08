@@ -85,7 +85,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
                             <input
                                 id="email"
                                 type="text"
-                                {...register('emailOrUsername', {
+                                {...register('email', {
                                     required: 'Email or username is required',
                                     // pattern: {
                                     //     value: /^\S+@\S+$/i,
@@ -97,8 +97,8 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
                          backdrop-blur-sm transition-all duration-200"
                                 placeholder="Enter your email or username"
                             />
-                            {errors.emailOrUsername && (
-                                <p className="mt-1 text-sm text-red-300">{errors.emailOrUsername.message}</p>
+                            {errors.email && (
+                                <p className="mt-1 text-sm text-red-300">{errors.email.message}</p>
                             )}
                         </div>
 

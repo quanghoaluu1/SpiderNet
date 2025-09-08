@@ -10,6 +10,7 @@ export interface RegisterRequest {
     lastName: string;
     birthDate: string;
     gender: string;
+    avatarUrl: string;
 }
 export interface AuthResponse {
     token: string;

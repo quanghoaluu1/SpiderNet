@@ -7,7 +7,7 @@ import { RegisterRequest } from "@/interfaces/Auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { format } from "date-fns";
-import { CalendarIcon, ChevronDownIcon, Eye, EyeOff } from "lucide-react";
+import { CalendarIcon, ChevronDownIcon, Eye, EyeOff, Info } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -52,7 +52,12 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     setError("");
 
     try {
-      const filteredData = { ...data };
+      // Set avatar URL based on gender
+      const avatarUrl = data.gender === "male" 
+        ? "https://res.cloudinary.com/dvsiqkepf/image/upload/v1757239817/avatar_default_male_iqg0qa.jpg"
+        : "https://res.cloudinary.com/dvsiqkepf/image/upload/v1757239827/avatar_default_female_jyn23s.jpg";
+      
+      const filteredData = { ...data, avatarUrl };
 
       const response = await authApi.register(filteredData);
       if (typeof window !== "undefined") {
@@ -261,12 +266,6 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
                         >
                           Female
                         </SelectItem>
-                        <SelectItem
-                          value="other"
-                          className="text-white hover:bg-white/10 focus:bg-white/10"
-                        >
-                          Other
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -309,12 +308,29 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-white/90 mb-2"
-              >
-                Password
-              </label>
+              <div className="flex items-center gap-2 mb-2">
+                <label
+                  htmlFor="password"
+                  className="text-sm font-medium text-white/90"
+                >
+                  Password
+                </label>
+                <div className="relative group flex items-center">
+                  <Info className="h-4 w-4 text-white/60 hover:text-white cursor-help" />
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                    <div className="text-left">
+                      <div className="font-semibold mb-1 text-center">Password Requirements:</div>
+                      <div>• Cannot be empty</div>
+                      <div>• 8-64 characters long</div>
+                      <div>• At least 1 uppercase letter</div>
+                      <div>• At least 1 lowercase letter</div>
+                      <div>• At least 1 number</div>
+                      <div>• At least 1 special character</div>
+                    </div>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                </div>
+              </div>
               <div className="relative">
                 <input
                   id="password"

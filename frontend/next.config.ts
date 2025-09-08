@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
   // Optimize images for production
   images: {
     unoptimized: process.env.NODE_ENV === 'production',
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
   
   // Enable experimental features for better performance
