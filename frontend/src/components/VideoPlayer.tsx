@@ -24,7 +24,7 @@ export default function VideoPlayer({
   responsive = true
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const playerRef = useRef<any>(null);
+  const playerRef = useRef<ReturnType<typeof videojs> | null>(null);
 
   useEffect(() => {
     console.log('VideoPlayer: src =', src);

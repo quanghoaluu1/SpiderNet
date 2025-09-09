@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from '@/lib/utils';
 
 interface ReactionPickerProps {
-  onReactionSelect: (type: ReactionType) => void;
+  onReactionSelect: (type: ReactionType | undefined) => void;
   currentReaction?: ReactionType;
   className?: string;
 }
@@ -147,7 +147,7 @@ export default function ReactionPicker({
           if (!isVisible) {
             if (currentReaction !== undefined) {
               // Nếu đã có reaction -> toggle bỏ
-              onReactionSelect(undefined as any);
+              onReactionSelect(undefined);
             } else {
               // Nếu chưa có -> mặc định Like
               onReactionSelect(ReactionType.Like);

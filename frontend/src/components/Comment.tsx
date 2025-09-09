@@ -34,7 +34,12 @@ export default function Comment({
   const [showReplies, setShowReplies] = useState(false);
   const [localComment, setLocalComment] = useState<CommentDto>(comment);
 
-  const handleReaction = async (type: ReactionType) => {
+  const handleReaction = async (type: ReactionType | undefined) => {
+    if (type === undefined) {
+      // Handle removing reaction - you may need to implement removeCommentReaction API
+      return;
+    }
+    
     setIsReacting(true);
     try {
       const result = await commentApi.addCommentReaction(localComment.id, type);

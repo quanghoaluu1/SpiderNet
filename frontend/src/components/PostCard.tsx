@@ -24,7 +24,12 @@ export default function PostCard({ post, onPostUpdate, onPostDelete }: PostCardP
   const [showComments, setShowComments] = useState(false);
   const [localPost, setLocalPost] = useState<PostDto>(post);
 
-  const handleReaction = async (type: ReactionType) => {
+  const handleReaction = async (type: ReactionType | undefined) => {
+    if (type === undefined) {
+      // Handle removing reaction - you may need to implement removeReaction API
+      return;
+    }
+    
     setIsReacting(true);
     try {
       const result = await postApi.addReaction(localPost.id, type);
